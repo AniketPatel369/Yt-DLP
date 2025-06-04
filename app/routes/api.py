@@ -69,7 +69,26 @@ def extract_from_url_param():
                 'detected_platform': platform_info['platform'],
                 'extraction_service': 'multi_platform_ytdlp'
             }
-            return jsonify(raw_metadata)
+
+            result = {
+                'filename': raw_metadata['_filename'],
+                'type': raw_metadata['_type'],
+                'channel': raw_metadata['channel'],
+                'comment_count': raw_metadata['comment_count'],
+                'aspect_ratio': raw_metadata['aspect_ratio'],
+                'description': raw_metadata['description'],
+                'filename': raw_metadata['filename'],
+                'duration': raw_metadata['duration'],
+                'ext': raw_metadata['ext'],
+                'comments': raw_metadata['comments'],
+                'webpage_url': raw_metadata['webpage_url'],
+                'webpage_url_domain': raw_metadata['webpage_url_domain'],
+                'width': raw_metadata['width'],
+                'formats': raw_metadata['formats'],
+                'detected_platform': platform_info['platform'],
+                'extraction_service': 'multi_platform_ytdlp'
+            }
+            return jsonify(result)
         else:
             return jsonify({
                 'error': error or 'Extraction failed',

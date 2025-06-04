@@ -252,9 +252,81 @@ class MultiPlatformYtDlpService:
         """Extract from Facebook with Facebook-specific settings"""
         logger.info("📘 Extracting from Facebook")
         
-        # ✅ Placeholder for Facebook implementation
-        return False, None, "Facebook extraction not implemented yet"
-    
+        for attempt in range(self.max_retries):
+            try:
+                cmd = [
+                    sys.executable, '-m', 'yt_dlp',
+                    '--dump-json',
+                    '--no-warnings',
+                    '--no-playlist',
+                    '--no-check-certificate',
+                    '--skip-download',
+                    '--cookies', config['cookies'],
+                    '--user-agent', config['user_agent'],
+                    '--sleep-interval', config['sleep_interval'],
+                    '--referer', 'https://www.facebook.com/',  # Facebook-specific
+                ] + config['extra_args'] + [url]
+
+                logger.info(f"Facebook extraction attempt {attempt + 1}")
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout)
+
+                if result.returncode == 0:
+                    try:
+                        metadata = json.loads(result.stdout)
+                        logger.info(f"✅ Facebook extraction successful: {metadata.get('title', 'Unknown')}")
+                        
+                        # ✅ Add Instagram-specific metadata
+                        metadata['platform'] = 'facebook'
+                        metadata['extracted_from'] = 'facebook_service'
+                        
+                        return True, metadata, None
+                    except json.JSONDecodeError as e:
+                        logger.error(f"JSON decode error: {e}")
+                        continue
+                else:
+                    error_msg = result.stderr.strip()
+                    logger.warning(f"❌ Facebook attempt {attempt + 1} failed: {error_msg}")
+
+            # ✅ Try fallback method for Instagram
+                    if attempt == self.max_retries - 1:
+                        return self._facebook_fallback_method(url)
+                    
+            except Exception as e:
+                logger.error(f"Exception in Facebook extraction: {e}")
+        
+        return False, None, "Facebook extraction failed after all retries"
+
+    def _facebook_fallback_method(self, url: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
+        """Fallback method for Facebook when cookies fail"""
+        logger.info("🔄 Trying Facebook fallback method")
+        
+        try:
+            # ✅ Try without cookies but with mobile user agent
+            cmd = [
+                sys.executable, '-m', 'yt_dlp',
+                '--dump-json',
+                '--no-warnings',
+                '--user-agent', 'Facebook 219.0.0.12.117 Android',
+                '--sleep-interval', '4',
+                '--referer', 'https://www.facebook.com/',
+                url
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout)
+            
+            if result.returncode == 0:
+                metadata = json.loads(result.stdout)
+                logger.info("✅ Facebook fallback method successful")
+                metadata['platform'] = 'facebook'
+                metadata['extraction_method'] = 'fallback'
+                return True, metadata, None
+            else:
+                return False, None, f"Facebook fallback failed: {result.stderr.strip()}"
+                
+        except Exception as e:
+            return False, None, f"Facebook fallback error: {e}"    
+            
     def get_platform_info(self, url: str) -> Dict[str, Any]:
         """Get information about the detected platform"""
         platform = self.detect_platform(url)
