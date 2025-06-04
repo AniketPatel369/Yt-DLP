@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yt-dlp JSON Extractor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎥 yt-dlp JSON Extractor</h1>
+            <p>Extract metadata from YouTube videos using yt-dlp</p>
+        </header>
+
+        <main class="main-content">
+            <form id="extractForm" class="extract-form">
+                <div class="input-group">
+                    <label for="videoUrl">Video URL:</label>
+                    <input 
+                        type="url" 
+                        id="videoUrl" 
+                        name="videoUrl" 
+                        placeholder="https://www.youtube.com/watch?v=..." 
+                        required
+                    >
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Extract Metadata</span>
+                        <span class="btn-loading" style="display: none;">Extracting...</span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="loadingIndicator" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>🔄 Extracting metadata from yt-dlp...</p>
+            </div>
+
+            <div id="errorContainer" class="error-container" style="display: none;">
+                <div class="error-message">
+                    <span class="error-icon">⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+
+            <div id="resultContainer" class="result-container" style="display: none;">
+                <div class="result-header">
+                    <h3>📄 Extracted Metadata</h3>
+                    <button id="downloadBtn" class="btn btn-download">
+                        💾 Download JSON
+                    </button>
+                </div>
+                <div id="metadataPreview" class="metadata-preview"></div>
+                <div id="jsonOutput" class="json-output"></div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> | 
+               Built with Python & Flask</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
