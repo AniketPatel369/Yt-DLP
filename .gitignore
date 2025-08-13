@@ -1,0 +1,258 @@
+# ========================
+# Python & Flask Project .gitignore
+# ========================
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+source/
+.venv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Flask specific
+instance/
+.webassets-cache
+
+# ========================
+# yt-dlp and Media Files
+# ========================
+
+# Cookie files (SENSITIVE - contains authentication)
+# All cookie files - will be created on server
+www.youtube.com_cookies.txt
+www.instagram.com_cookies.txt
+www.facebook.com_cookies.txt
+www.tiktok.com_cookies.txt
+www.twitter.com_cookies.txt
+*.cookies.txt
+cookies.txt
+cookies/
+*.netscape
+*.mozilla
+
+# Exclude all .txt files except essential ones
+*.txt
+!requirements.txt
+!README.txt
+!LICENSE.txt
+
+# Downloaded media files
+*.mp4
+*.mp3
+*.mkv
+*.webm
+*.m4a
+*.flac
+*.wav
+*.avi
+*.mov
+*.wmv
+*.pyc
+
+# yt-dlp cache and temp files
+.cache/
+temp/
+tmp/
+downloads/
+
+# ========================
+# JSON and Data Files
+# ========================
+
+# Temporary JSON files
+*.json
+!package.json
+!package-lock.json
+!.eslintrc.json
+!tsconfig.json
+
+# Except essential config files
+!app.json
+!manifest.json
+
+# ========================
+# Logs and Databases
+# ========================
+
+# Log files
+*.log
+logs/
+log/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ========================
+# OS Generated Files
+# ========================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ========================
+# Server and Deployment
+# ========================
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+
+# Server logs
+access.log
+error.log
+nginx.log
+apache.log
+
+# Process files
+*.pid
+
+# ========================
+# Development Tools
+# ========================
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# ========================
+# Backup and Temporary Files
+# ========================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# ========================
+# Project Specific
+# ========================
+
+# Configuration backups
+config.backup.py
+settings.backup.py
+
+# Test data
+test_data/
+sample_videos/
+
+# Documentation builds
+docs/_build/
+site/
+
+# User uploads
+uploads/
+user_data/
+
+# ========================
+# Security
+# ========================
+
+# API keys and secrets
+.secrets
+secrets.json
+api_keys.txt
+credentials.json
+
+# Private configuration
+private_config.py
+local_settings.py
+app/routes/__pycache__/api.cpython-311.pyc
+app/services/__pycache__/multi_platform_service.cpython-311.pyc
+app/routes/__pycache__/api.cpython-311.pyc
+www.instagram.com_cookies.txt

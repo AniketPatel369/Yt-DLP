@@ -26,7 +26,13 @@ class MultiPlatformYtDlpService:
                 'cookies': './www.youtube.com_cookies.txt',
                 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'sleep_interval': '2',
-                'extra_args': ['--extractor-args', 'youtube:player_client=android']
+                'extra_args': [
+                    '--no-abort-on-error', 
+                    '--ignore-errors',
+                    '--extractor-retries', '3',
+                    '--fragment-retries', '3',
+                    '--retry-sleep', '5'
+                ]
             },
             'instagram': {
                 'cookies': './www.instagram.com_cookies.txt',
@@ -148,6 +154,8 @@ class MultiPlatformYtDlpService:
                     '--no-playlist',
                     '--no-check-certificate',
                     '--skip-download',
+                    '--no-abort-on-error',
+                    '--ignore-errors',
                     '--cookies', config['cookies'],
                     '--user-agent', config['user_agent'],
                     '--sleep-interval', config['sleep_interval'],
@@ -162,6 +170,11 @@ class MultiPlatformYtDlpService:
                 else:
                     error_msg = result.stderr.strip()
                     logger.warning(f"❌ YouTube attempt {attempt + 1} failed: {error_msg}")
+                    
+                    # ✅ Try fallback method without cookies on format errors
+                    if "Requested format is not available" in error_msg and attempt == self.max_retries - 1:
+                        logger.info("🔄 Trying YouTube fallback method without cookies")
+                        return self._youtube_fallback_method(url)
                     
             except Exception as e:
                 logger.error(f"Exception in YouTube extraction: {e}")
@@ -326,6 +339,61 @@ class MultiPlatformYtDlpService:
                 
         except Exception as e:
             return False, None, f"Facebook fallback error: {e}"    
+    
+    def _youtube_fallback_method(self, url: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
+        """Fallback method for YouTube when cookies or format issues occur"""
+        logger.info("🔄 Trying YouTube fallback method")
+        
+        # Try multiple fallback strategies
+        fallback_strategies = [
+            # Strategy 1: Basic extraction with mobile user agent
+            {
+                'user_agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
+                'extra_args': ['--extractor-retries', '5']
+            },
+            # Strategy 2: Desktop browser simulation
+            {
+                'user_agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'extra_args': ['--geo-bypass', '--extractor-retries', '3']
+            },
+            # Strategy 3: Minimal extraction (last resort)
+            {
+                'user_agent': 'yt-dlp/2025.08.11',
+                'extra_args': ['--no-check-certificate', '--geo-bypass-country', 'US']
+            }
+        ]
+        
+        for i, strategy in enumerate(fallback_strategies):
+            try:
+                logger.info(f"🔄 Trying fallback strategy {i+1}/3")
+                
+                cmd = [
+                    sys.executable, '-m', 'yt_dlp',
+                    '--dump-json',
+                    '--no-warnings',
+                    '--no-playlist',
+                    '--skip-download',
+                    '--no-abort-on-error',
+                    '--ignore-errors',
+                    '--user-agent', strategy['user_agent'],
+                    '--sleep-interval', '3',
+                ] + strategy['extra_args'] + [url]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout)
+                
+                if result.returncode == 0:
+                    metadata = json.loads(result.stdout)
+                    logger.info(f"✅ YouTube fallback strategy {i+1} successful")
+                    metadata['platform'] = 'youtube'
+                    metadata['extraction_method'] = f'fallback_strategy_{i+1}'
+                    return True, metadata, None
+                else:
+                    logger.warning(f"❌ Fallback strategy {i+1} failed: {result.stderr.strip()}")
+                    
+            except Exception as e:
+                logger.error(f"Exception in fallback strategy {i+1}: {e}")
+                
+        return False, None, "All YouTube fallback strategies failed. Server may need browser cookies or different IP."
             
     def get_platform_info(self, url: str) -> Dict[str, Any]:
         """Get information about the detected platform"""
