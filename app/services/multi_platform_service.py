@@ -25,13 +25,14 @@ class MultiPlatformYtDlpService:
             'youtube': {
                 'cookies': './www.youtube.com_cookies.txt',
                 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'sleep_interval': '2',
+                'sleep_interval': '3',
                 'extra_args': [
                     '--no-abort-on-error', 
                     '--ignore-errors',
-                    '--extractor-retries', '3',
-                    '--fragment-retries', '3',
-                    '--retry-sleep', '5'
+                    '--extractor-retries', '5',
+                    '--fragment-retries', '5',
+                    '--retry-sleep', '3',
+                    '--geo-bypass'
                 ]
             },
             'instagram': {
@@ -145,6 +146,10 @@ class MultiPlatformYtDlpService:
         """Extract from YouTube with YouTube-specific settings"""
         logger.info("🎥 Extracting from YouTube")
         
+        # Check if cookies file exists
+        import os
+        cookies_exist = os.path.exists(config['cookies'])
+        
         for attempt in range(self.max_retries):
             try:
                 cmd = [
@@ -156,10 +161,19 @@ class MultiPlatformYtDlpService:
                     '--skip-download',
                     '--no-abort-on-error',
                     '--ignore-errors',
-                    '--cookies', config['cookies'],
                     '--user-agent', config['user_agent'],
                     '--sleep-interval', config['sleep_interval'],
-                ] + config['extra_args'] + [url]
+                ]
+                
+                # Only add cookies if file exists
+                if cookies_exist:
+                    cmd.extend(['--cookies', config['cookies']])
+                    logger.info(f"Using cookies file: {config['cookies']}")
+                else:
+                    logger.warning(f"Cookie file not found: {config['cookies']}, proceeding without cookies")
+                
+                # Add extra args and URL
+                cmd.extend(config['extra_args'] + [url])
                 
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout)
                 
@@ -171,13 +185,15 @@ class MultiPlatformYtDlpService:
                     error_msg = result.stderr.strip()
                     logger.warning(f"❌ YouTube attempt {attempt + 1} failed: {error_msg}")
                     
-                    # ✅ Try fallback method without cookies on format errors
-                    if "Requested format is not available" in error_msg and attempt == self.max_retries - 1:
-                        logger.info("🔄 Trying YouTube fallback method without cookies")
+                    # Try fallback on last attempt
+                    if attempt == self.max_retries - 1:
+                        logger.info("🔄 Trying YouTube fallback methods")
                         return self._youtube_fallback_method(url)
                     
             except Exception as e:
                 logger.error(f"Exception in YouTube extraction: {e}")
+                if attempt == self.max_retries - 1:
+                    return self._youtube_fallback_method(url)
         
         return False, None, "YouTube extraction failed after all retries"
     
